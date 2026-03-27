@@ -18,6 +18,8 @@
     <button class="nav-btn" onclick="showSection('intervals')" id="btn-intervals"><span class="icon">🎵</span>Intervalles</button>
     <button class="nav-btn" onclick="showSection('scales')" id="btn-scales"><span class="icon">🎼</span>Gammes</button>
     <button class="nav-btn" onclick="showSection('chords')" id="btn-chords"><span class="icon">🎸</span>Accords</button>
+    <button class="nav-btn" onclick="showSection('theory')" id="btn-theory"><span class="icon">📖</span>Théorie</button>
+    <button class="nav-btn" onclick="showSection('ear')" id="btn-ear"><span class="icon">👂</span>Oreille</button>
     <button class="nav-btn" onclick="showSection('quiz')" id="btn-quiz"><span class="icon">⚡</span>Quiz</button>
   </nav>
 
@@ -152,6 +154,48 @@
       <h1 class="module-title">Suites d'accords</h1>
       <p class="module-sub">Pop / Rock · Jazz · Hip-hop & R&B</p>
       <div id="chordsContent"></div>
+    </div>
+
+    <!-- ===== THÉORIE ===== -->
+    <div class="section" id="section-theory">
+      <h1 class="module-title">Théorie des accords</h1>
+      <p class="module-sub">Construction · Degrés · Tension · Cadences</p>
+      <div id="theoryContent"></div>
+    </div>
+
+    <!-- ===== OREILLE ===== -->
+    <div class="section" id="section-ear">
+      <h1 class="module-title">Entraînement de l'oreille</h1>
+      <p class="module-sub">Notes · Intervalles · Accords</p>
+
+      <div class="ear-score">
+        <div>
+          <div class="score-label">Score</div>
+          <div class="score-num"><span id="earCorrect">0</span> / <span id="earTotal">0</span></div>
+        </div>
+        <div style="text-align:right">
+          <div class="score-label">Série</div>
+          <div class="score-num" id="earStreak">0</div>
+        </div>
+      </div>
+
+      <div class="ear-level-row">
+        <button class="sel-btn active" id="el-1" onclick="setEarLevel(1)">🎵 Notes</button>
+        <button class="sel-btn" id="el-2" onclick="setEarLevel(2)">🎶 Intervalles</button>
+        <button class="sel-btn" id="el-3" onclick="setEarLevel(3)">🎹 Accords</button>
+      </div>
+
+      <div class="ear-card">
+        <div class="quiz-question" id="earQuestion">Quelle est cette note ?</div>
+        <div class="quiz-sub" id="earSub">Appuie sur ▶ pour écouter</div>
+        <button class="ear-play-btn" id="earPlayBtn" onclick="playEarSound()">▶</button>
+        <div class="ear-hint">Tu peux réécouter autant de fois que tu veux</div>
+      </div>
+
+      <div class="quiz-options" id="earOptions" style="display:grid;margin-bottom:12px"></div>
+      <div class="quiz-result" id="earResult"></div>
+      <button class="btn-primary" id="earNextBtn" onclick="nextEarQuestion()" style="display:none">Question suivante →</button>
+      <button class="btn-secondary" onclick="resetEarScore()">Réinitialiser le score</button>
     </div>
 
     <!-- ===== QUIZ ===== -->

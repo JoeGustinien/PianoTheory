@@ -567,3 +567,284 @@ body {
   transition: all 0.2s;
 }
 .play-btn:active { opacity: 0.7; transform: scale(0.97); }
+
+/* =====================
+   THÉORIE
+   ===================== */
+
+.theory-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0 0 14px;
+}
+
+.theory-chord-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.theory-chord-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theory-chord-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.theory-chord-formula {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: var(--accent);
+}
+.theory-chord-semitones {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+}
+.theory-chord-feel {
+  font-size: 12px;
+  color: var(--text2);
+  font-style: italic;
+  margin-top: 2px;
+}
+.theory-chord-example {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.color-accent  .theory-chord-formula { color: var(--accent); }
+.color-purple  .theory-chord-formula { color: #a99de8; }
+.color-red     .theory-chord-formula { color: #e8898a; }
+.color-teal    .theory-chord-formula { color: #5dcaa5; }
+.color-blue    .theory-chord-formula { color: #85b7eb; }
+.color-coral   .theory-chord-formula { color: #f0997b; }
+
+/* DEGRÉS */
+.degree-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.degree-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  border-left: 3px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 2px 10px;
+  align-items: start;
+}
+
+.degree-card.role-repos   { border-left-color: var(--accent); }
+.degree-card.role-tension { border-left-color: #e8898a; }
+.degree-card.role-couleur { border-left-color: #a99de8; }
+
+.degree-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--accent);
+  grid-row: 1 / 3;
+  align-self: center;
+}
+.degree-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text);
+  grid-column: 2;
+}
+.degree-role-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  grid-column: 3;
+  grid-row: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+.degree-role-badge.role-repos   { background: rgba(200,169,110,0.15); color: var(--accent); }
+.degree-role-badge.role-tension { background: rgba(232,137,138,0.15); color: #e8898a; }
+.degree-role-badge.role-couleur { background: rgba(169,157,232,0.15); color: #a99de8; }
+
+.degree-desc {
+  font-size: 12px;
+  color: var(--text2);
+  grid-column: 2 / 4;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.degree-example {
+  font-size: 11px;
+  color: var(--text3);
+  grid-column: 2 / 4;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* TENSION / REPOS diagram */
+.tension-diagram {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+.tension-pole {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.tension-pole.repos   { background: rgba(200,169,110,0.1); border: 1px solid rgba(200,169,110,0.25); }
+.tension-pole.tension { background: rgba(232,137,138,0.1); border: 1px solid rgba(232,137,138,0.25); }
+.pole-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.pole-chords { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text2); }
+.tension-pole.repos   .pole-label { color: var(--accent); }
+.tension-pole.tension .pole-label { color: #e8898a; }
+.tension-arrow { font-size: 20px; color: var(--text3); flex-shrink: 0; }
+
+/* CADENCES */
+.cadence-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-top-width: 2px;
+}
+.cadence-card.cadence-success { border-top-color: var(--success); }
+.cadence-card.cadence-warning { border-top-color: #ef9f27; }
+.cadence-card.cadence-info    { border-top-color: #85b7eb; }
+.cadence-card.cadence-accent  { border-top-color: var(--accent); }
+
+.cadence-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.cadence-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
+}
+.cadence-chords {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--accent);
+  margin-top: 2px;
+}
+.cadence-feel-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: var(--surface2);
+  color: var(--text2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cadence-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.cadence-example {
+  font-size: 12px;
+  color: var(--accent);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 4px;
+}
+.cadence-usage {
+  font-size: 11px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+/* =====================
+   OREILLE
+   ===================== */
+
+.ear-level-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.ear-level-row .sel-btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+}
+
+.ear-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px 20px 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  text-align: center;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ear-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a1208;
+  font-size: 28px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 8px auto 0;
+}
+.ear-play-btn:active { transform: scale(0.93); opacity: 0.85; }
+
+.ear-hint {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+.ear-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}

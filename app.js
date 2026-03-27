@@ -483,10 +483,358 @@ function resetQuiz() {
 }
 
 // =====================
-// NAVIGATION
+// THÉORIE
 // =====================
+
+const DEGREES = [
+  { num:'I',   name:'Tonique',          role:'repos',    color:'accent',   desc:'Le "chez soi". Point de départ et d\'arrivée. Toute tension finit ici.', example:'Do (C) dans Do Majeur' },
+  { num:'II',  name:'Sus-tonique',      role:'tension',  color:'purple',   desc:'Peu stable. Conduit naturellement vers la dominante ou la sous-dominante.', example:'Ré (D) dans Do Majeur' },
+  { num:'III', name:'Médiante',         role:'couleur',  color:'purple',   desc:'Donne la couleur majeure ou mineure à la tonalité. Accord de passage.', example:'Mi (E) dans Do Majeur' },
+  { num:'IV',  name:'Sous-dominante',   role:'tension',  color:'blue',     desc:'Crée une douce tension. Souvent avant la dominante ou la tonique. Base du blues.', example:'Fa (F) dans Do Majeur' },
+  { num:'V',   name:'Dominante',        role:'tension',  color:'red',      desc:'Tension maximum ! Veut absolument retourner à la tonique. Le moteur de la musique tonale.', example:'Sol (G) dans Do Majeur' },
+  { num:'VI',  name:'Sus-dominante',    role:'repos',    color:'teal',     desc:'Repos relatif, teinte émotionnelle. Base des progressions mineures en pop.', example:'La (A) dans Do Majeur' },
+  { num:'VII', name:'Sensible',         role:'tension',  color:'red',      desc:'Note sensible : un demi-ton sous la tonique. Tension extrême vers le I.', example:'Si (B) dans Do Majeur' },
+];
+
+const CADENCES = [
+  {
+    name: 'Cadence parfaite',
+    chords: 'V → I',
+    feel: 'Conclusion totale',
+    color: 'success',
+    desc: 'La cadence la plus forte. La dominante résout sur la tonique. C\'est la ponctuation finale d\'une phrase musicale — comme un point.',
+    example: 'Sol7 → Do (G7 → C)',
+    usage: 'Fins de morceaux, fins de couplets, résolutions dramatiques',
+  },
+  {
+    name: 'Cadence imparfaite',
+    chords: 'I → V',
+    feel: 'Suspension, attente',
+    color: 'warning',
+    desc: 'On part de la tonique vers la dominante. Crée une attente, une question sans réponse. Parfait pour terminer un couplet avant un refrain.',
+    example: 'Do → Sol (C → G)',
+    usage: 'Fins de couplets, transitions, créer de la tension',
+  },
+  {
+    name: 'Cadence plagale',
+    chords: 'IV → I',
+    feel: 'Amen, sérénité',
+    color: 'info',
+    desc: 'Appelée "cadence Amen" car très utilisée dans les hymnes religieux. Douce et conclusive, moins dramatique que la parfaite.',
+    example: 'Fa → Do (F → C)',
+    usage: 'Gospel, musique sacrée, fins douces en pop/folk',
+  },
+  {
+    name: 'Cadence rompue',
+    chords: 'V → VI',
+    feel: 'Surprise, émotion',
+    color: 'accent',
+    desc: 'On attend le I mais on arrive sur le VI. Effet de surprise émotionnelle très puissant. L\'oreille est "trompée" de façon agréable.',
+    example: 'Sol → Lam (G → Am)',
+    usage: 'Moments émotionnels forts, éviter une conclusion trop prévisible',
+  },
+];
+
+const CHORD_CONSTRUCTION = [
+  {
+    name: 'Accord majeur',
+    formula: '1 – 3M – 5J',
+    intervals: [0, 4, 7],
+    semitones: '0 + 4 + 3',
+    color: 'accent',
+    feel: 'Joyeux, lumineux, stable',
+    example: 'Do (C) : Do – Mi – Sol',
+  },
+  {
+    name: 'Accord mineur',
+    formula: '1 – 3m – 5J',
+    intervals: [0, 3, 7],
+    semitones: '0 + 3 + 4',
+    color: 'purple',
+    feel: 'Mélancolique, profond, sombre',
+    example: 'Lam (Am) : La – Do – Mi',
+  },
+  {
+    name: 'Accord de 7ème dominante',
+    formula: '1 – 3M – 5J – 7m',
+    intervals: [0, 4, 7, 10],
+    semitones: '0 + 4 + 3 + 3',
+    color: 'red',
+    feel: 'Tension maximale, veut résoudre',
+    example: 'Sol7 (G7) : Sol – Si – Ré – Fa',
+  },
+  {
+    name: 'Accord maj7',
+    formula: '1 – 3M – 5J – 7M',
+    intervals: [0, 4, 7, 11],
+    semitones: '0 + 4 + 3 + 4',
+    color: 'teal',
+    feel: 'Doux, sophistiqué, jazz/soul',
+    example: 'Domaj7 (Cmaj7) : Do – Mi – Sol – Si',
+  },
+  {
+    name: 'Accord mineur 7',
+    formula: '1 – 3m – 5J – 7m',
+    intervals: [0, 3, 7, 10],
+    semitones: '0 + 3 + 4 + 3',
+    color: 'blue',
+    feel: 'Coloré, jazz, mélancolie douce',
+    example: 'Rém7 (Dm7) : Ré – Fa – La – Do',
+  },
+  {
+    name: 'Accord diminué',
+    formula: '1 – 3m – 5dim',
+    intervals: [0, 3, 6],
+    semitones: '0 + 3 + 3',
+    color: 'coral',
+    feel: 'Très instable, dissonant, dramatique',
+    example: 'Sidim (Bdim) : Si – Ré – Fa',
+  },
+];
+
+function buildTheory() {
+  const content = document.getElementById('theoryContent');
+
+  // Section 1 : construction des accords
+  content.innerHTML += `<h2 class="theory-section-title">Construction des accords</h2>
+  <div class="info-box">Tout accord se construit en <strong>empilant des tierces</strong> sur une note de base (la fondamentale). La nature de ces tierces (majeure = 4 demi-tons, mineure = 3) détermine la couleur de l'accord.</div>`;
+
+  const grid = document.createElement('div');
+  grid.className = 'theory-chord-grid';
+  CHORD_CONSTRUCTION.forEach(chord => {
+    const card = document.createElement('div');
+    card.className = `theory-chord-card color-${chord.color}`;
+    card.innerHTML = `
+      <div class="theory-chord-name">${chord.name}</div>
+      <div class="theory-chord-formula">${chord.formula}</div>
+      <div class="theory-chord-semitones">${chord.semitones} demi-tons</div>
+      <div class="theory-chord-feel">${chord.feel}</div>
+      <div class="theory-chord-example">${chord.example}</div>
+      <button class="play-btn" onclick="playChord([${chord.intervals.map(i=>`(0+${i})%12`).join(',')}], 4, 1.2)">▶ Écouter</button>`;
+    grid.appendChild(card);
+  });
+  content.appendChild(grid);
+
+  // Section 2 : degrés
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Les degrés de la gamme</h2>
+  <div class="info-box">Dans une tonalité, chaque note porte un <strong>rôle fonctionnel</strong>. C'est ce qui explique pourquoi certains accords créent de la tension et d'autres du repos.</div>`;
+
+  const degGrid = document.createElement('div');
+  degGrid.className = 'degree-grid';
+  DEGREES.forEach(deg => {
+    const card = document.createElement('div');
+    card.className = `degree-card role-${deg.role}`;
+    card.innerHTML = `
+      <div class="degree-num">${deg.num}</div>
+      <div class="degree-name">${deg.name}</div>
+      <div class="degree-role-badge role-${deg.role}">${deg.role}</div>
+      <div class="degree-desc">${deg.desc}</div>
+      <div class="degree-example">${deg.example}</div>`;
+    degGrid.appendChild(card);
+  });
+  content.appendChild(degGrid);
+
+  // Section 3 : tension / repos
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Tension & Repos</h2>
+  <div class="info-box">La musique tonale fonctionne sur un cycle permanent : <strong>repos → tension → résolution</strong>. C'est ce mouvement qui crée l'émotion.</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Les pôles</div>
+    <div class="tension-diagram">
+      <div class="tension-pole repos"><span class="pole-label">Repos</span><span class="pole-chords">I · VI</span></div>
+      <div class="tension-arrow">⟷</div>
+      <div class="tension-pole tension"><span class="pole-label">Tension</span><span class="pole-chords">V · VII · II</span></div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:12px">
+      Le <strong>I</strong> est le pôle de repos absolu. Le <strong>V</strong> est le pôle de tension maximale — il contient le triton (Si–Fa dans Sol7 en Do majeur), l'intervalle le plus instable. L'oreille "veut" toujours entendre la résolution vers le I.
+    </div>
+  </div>`;
+
+  // Section 4 : cadences
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Les cadences</h2>
+  <div class="info-box">Une <strong>cadence</strong> est une formule harmonique qui conclut (ou suspend) une phrase musicale. C'est la "ponctuation" de la musique.</div>`;
+
+  CADENCES.forEach(cad => {
+    const card = document.createElement('div');
+    card.className = `cadence-card cadence-${cad.color}`;
+    card.innerHTML = `
+      <div class="cadence-header">
+        <div>
+          <div class="cadence-name">${cad.name}</div>
+          <div class="cadence-chords">${cad.chords}</div>
+        </div>
+        <div class="cadence-feel-badge">${cad.feel}</div>
+      </div>
+      <div class="cadence-desc">${cad.desc}</div>
+      <div class="cadence-example">${cad.example}</div>
+      <div class="cadence-usage">${cad.usage}</div>`;
+    content.appendChild(card);
+  });
+}
+
+// =====================
+// OREILLE
+// =====================
+
+let earLevel = 1; // 1=note, 2=intervalle, 3=accord
+let earActive = false;
+let earCorrect = 0, earTotal = 0, earStreak = 0;
+let earAnswer = null;
+
+function setEarLevel(lvl) {
+  earLevel = lvl;
+  [1,2,3].forEach(l => {
+    const btn = document.getElementById(`el-${l}`);
+    btn.classList.toggle('active', l === lvl);
+    btn.classList.toggle('sel-btn', true);
+  });
+  resetEarRound();
+  nextEarQuestion();
+}
+
+function resetEarRound() {
+  earActive = false;
+  earAnswer = null;
+  document.getElementById('earResult').textContent = '';
+  document.getElementById('earResult').className = 'quiz-result';
+  document.getElementById('earOptions').innerHTML = '';
+  document.getElementById('earPlayBtn').style.display = 'block';
+  document.getElementById('earNextBtn').style.display = 'none';
+  document.getElementById('earQuestion').textContent = levelPrompt();
+  document.getElementById('earSub').textContent = levelSub();
+}
+
+function levelPrompt() {
+  if (earLevel === 1) return 'Écoute et identifie la note';
+  if (earLevel === 2) return 'Écoute et identifie l\'intervalle';
+  return 'Écoute et identifie l\'accord';
+}
+function levelSub() {
+  if (earLevel === 1) return 'Appuie sur ▶ pour entendre la note';
+  if (earLevel === 2) return 'Deux notes jouent simultanément';
+  return 'Un accord de 3 notes joue simultanément';
+}
+
+let currentEarData = null;
+
+function nextEarQuestion() {
+  earActive = false;
+  document.getElementById('earResult').textContent = '';
+  document.getElementById('earResult').className = 'quiz-result';
+  document.getElementById('earNextBtn').style.display = 'none';
+  document.getElementById('earOptions').innerHTML = '';
+
+  if (earLevel === 1) {
+    const noteIdx = Math.floor(Math.random() * 12);
+    currentEarData = { type: 'note', noteIdx };
+    document.getElementById('earQuestion').textContent = 'Quelle est cette note ?';
+    document.getElementById('earSub').textContent = 'Appuie sur ▶ pour écouter';
+    document.getElementById('earPlayBtn').style.display = 'block';
+
+  } else if (earLevel === 2) {
+    const root = Math.floor(Math.random() * 12);
+    const iv = INTERVALS.filter(i => i.semitones > 0 && i.semitones <= 12)[Math.floor(Math.random() * 12)];
+    currentEarData = { type: 'interval', root, interval: iv };
+    document.getElementById('earQuestion').textContent = 'Quel est cet intervalle ?';
+    document.getElementById('earSub').textContent = 'Deux notes jouent en même temps';
+    document.getElementById('earPlayBtn').style.display = 'block';
+
+  } else {
+    const root = Math.floor(Math.random() * 12);
+    const type = Math.random() < 0.5 ? 'major' : 'minor';
+    currentEarData = { type: 'chord', root, chordType: type };
+    document.getElementById('earQuestion').textContent = 'Majeur ou mineur ?';
+    document.getElementById('earSub').textContent = 'Un accord de 3 notes joue';
+    document.getElementById('earPlayBtn').style.display = 'block';
+  }
+}
+
+function playEarSound() {
+  if (!currentEarData) return;
+  const d = currentEarData;
+
+  if (d.type === 'note') {
+    playNote(d.noteIdx, 4, 1.2);
+  } else if (d.type === 'interval') {
+    playNote(d.root, 4, 1.0);
+    setTimeout(() => playNote((d.root + d.interval.semitones) % 12, 4, 1.0), 50);
+  } else {
+    const intervals = d.chordType === 'major' ? [0,4,7] : [0,3,7];
+    intervals.forEach((st, i) => setTimeout(() => playNote((d.root + st) % 12, 4, 1.2), i * 30));
+  }
+
+  // Show options after first play
+  if (document.getElementById('earOptions').innerHTML === '') {
+    showEarOptions();
+  }
+}
+
+function showEarOptions() {
+  const optDiv = document.getElementById('earOptions');
+  optDiv.innerHTML = '';
+  let options = [];
+  let correct = '';
+
+  if (currentEarData.type === 'note') {
+    correct = `${NOTES_FR_SHORT[currentEarData.noteIdx]} (${NOTES_EN[currentEarData.noteIdx]})`;
+    const all = NOTES_EN.map((en,i) => `${NOTES_FR_SHORT[i]} (${en})`);
+    options = shuffle([correct, ...pick(all.filter(o => o !== correct), 3)]);
+  } else if (currentEarData.type === 'interval') {
+    correct = currentEarData.interval.name;
+    const allNames = INTERVALS.filter(i => i.semitones > 0 && i.semitones <= 12).map(i => i.name);
+    options = shuffle([correct, ...pick(allNames.filter(n => n !== correct), 3)]);
+  } else {
+    correct = currentEarData.chordType === 'major' ? 'Majeur' : 'Mineur';
+    options = ['Majeur', 'Mineur'];
+  }
+
+  earAnswer = correct;
+  earActive = true;
+
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.onclick = () => answerEar(opt, btn, optDiv);
+    optDiv.appendChild(btn);
+  });
+}
+
+function answerEar(answer, btn, optDiv) {
+  if (!earActive) return;
+  earActive = false;
+  earTotal++;
+  document.getElementById('earTotal').textContent = earTotal;
+
+  if (answer === earAnswer) {
+    btn.classList.add('correct');
+    earCorrect++;
+    earStreak++;
+    document.getElementById('earResult').textContent = '✓ Bonne oreille !';
+    document.getElementById('earResult').className = 'quiz-result correct-msg';
+  } else {
+    btn.classList.add('wrong');
+    earStreak = 0;
+    optDiv.querySelectorAll('.quiz-opt').forEach(b => {
+      if (b.textContent === earAnswer) b.classList.add('correct');
+    });
+    document.getElementById('earResult').textContent = `✗ C'était : ${earAnswer}`;
+    document.getElementById('earResult').className = 'quiz-result wrong-msg';
+  }
+  document.getElementById('earCorrect').textContent = earCorrect;
+  document.getElementById('earStreak').textContent = earStreak;
+  document.getElementById('earNextBtn').style.display = 'block';
+  document.getElementById('earPlayBtn').style.display = 'block';
+}
+
+function resetEarScore() {
+  earCorrect = 0; earTotal = 0; earStreak = 0;
+  document.getElementById('earCorrect').textContent = '0';
+  document.getElementById('earTotal').textContent = '0';
+  document.getElementById('earStreak').textContent = '0';
+  nextEarQuestion();
+}
 const SECTION_LABELS = {
-  keys:'Clavier', intervals:'Intervalles', scales:'Gammes', chords:'Accords', quiz:'Quiz'
+  keys:'Clavier', intervals:'Intervalles', scales:'Gammes', chords:'Accords', theory:'Théorie', ear:'Oreille', quiz:'Quiz'
 };
 
 function showSection(name) {
@@ -506,4 +854,6 @@ document.addEventListener('DOMContentLoaded', () => {
   buildRootSelector();
   renderScale();
   buildChords();
+  buildTheory();
+  nextEarQuestion();
 });
