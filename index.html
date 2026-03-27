@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PianoTheory</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <span class="logo">♩ PianoTheory</span>
+    <span class="module-indicator" id="modLabel">Clavier</span>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showSection('keys')" id="btn-keys"><span class="icon">🎹</span>Clavier</button>
+    <button class="nav-btn" onclick="showSection('intervals')" id="btn-intervals"><span class="icon">🎵</span>Intervalles</button>
+    <button class="nav-btn" onclick="showSection('scales')" id="btn-scales"><span class="icon">🎼</span>Gammes</button>
+    <button class="nav-btn" onclick="showSection('chords')" id="btn-chords"><span class="icon">🎸</span>Accords</button>
+    <button class="nav-btn" onclick="showSection('quiz')" id="btn-quiz"><span class="icon">⚡</span>Quiz</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ===== CLAVIER ===== -->
+    <div class="section active" id="section-keys">
+      <h1 class="module-title">Le clavier</h1>
+      <p class="module-sub">Touche une note pour l'identifier</p>
+
+      <div class="piano-wrap">
+        <div class="piano" id="piano"></div>
+        <div class="piano-info">
+          <div class="note-display" id="noteDisplay">—</div>
+          <div class="note-hint" id="noteHint">Touche une touche</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>L'octave</strong> contient 12 demi-tons : 7 touches blanches (Do Ré Mi Fa Sol La Si) et 5 noires (les dièses/bémols). La même séquence se répète à l'infini sur le clavier.
+      </div>
+
+      <div class="card">
+        <div class="card-title">Notation française vs anglaise</div>
+        <table class="notation-table">
+          <thead><tr><th>Français</th><th>Anglais</th><th>Dièse / Bémol</th></tr></thead>
+          <tbody>
+            <tr><td>Do</td><td>C</td><td>Do# (C#) / Ré♭ (Db)</td></tr>
+            <tr><td>Ré</td><td>D</td><td>Ré# (D#) / Mi♭ (Eb)</td></tr>
+            <tr><td>Mi</td><td>E</td><td>—</td></tr>
+            <tr><td>Fa</td><td>F</td><td>Fa# (F#) / Sol♭ (Gb)</td></tr>
+            <tr><td>Sol</td><td>G</td><td>Sol# (G#) / La♭ (Ab)</td></tr>
+            <tr><td>La</td><td>A</td><td>La# (A#) / Si♭ (Bb)</td></tr>
+            <tr><td>Si</td><td>B</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Astuce mémo</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          Mi–Fa et Si–Do sont les <strong>seuls demi-tons naturels</strong> du clavier (pas de touche noire entre eux). Tous les autres espaces blancs sont des tons entiers.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INTERVALLES ===== -->
+    <div class="section" id="section-intervals">
+      <h1 class="module-title">Intervalles</h1>
+      <p class="module-sub">Tierces, quintes et les autres</p>
+
+      <div class="info-box">
+        Un <strong>intervalle</strong> = distance entre deux notes, comptée en demi-tons. C'est la base pour construire n'importe quel accord ou mélodie.
+      </div>
+
+      <div class="interval-grid" id="intervalGrid"></div>
+
+      <div class="divider"></div>
+
+      <div class="card">
+        <div class="card-title">Les tierces — piliers des accords</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">
+          Empiler deux tierces donne une <strong>triade</strong> (accord de 3 sons). Troisième majeure (4st) + mineure (3st) = accord majeur. Mineure + majeure = accord mineur.
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;flex:1;min-width:120px">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px">Accord majeur</div>
+            <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--accent)">3M + 3m</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px">ex : Do – Mi – Sol (C–E–G)</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;flex:1;min-width:120px">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px">Accord mineur</div>
+            <div style="font-family:'Playfair Display',serif;font-size:16px;color:#a99de8">3m + 3M</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px">ex : La – Do – Mi (A–C–E)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">La quinte juste — l'intervalle universel</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          7 demi-tons. Sonne <strong>toujours stable et puissant</strong>. C'est le fondement du "power chord" (rock/métal) et la base du cercle des quintes pour naviguer entre les tonalités.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GAMMES ===== -->
+    <div class="section" id="section-scales">
+      <h1 class="module-title">Gammes</h1>
+      <p class="module-sub">Majeures, mineures & relatives</p>
+
+      <div style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:10px">Tonique</div>
+        <div class="selector-row" id="rootSelector"></div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:10px">Type de gamme</div>
+        <div class="selector-row">
+          <button class="sel-btn active" onclick="setScaleType('major')" id="st-major">Majeure</button>
+          <button class="sel-btn" onclick="setScaleType('natural_minor')" id="st-natural_minor">Mineure nat.</button>
+          <button class="sel-btn" onclick="setScaleType('harmonic_minor')" id="st-harmonic_minor">Mineure harm.</button>
+        </div>
+      </div>
+
+      <div class="card" id="scaleCard">
+        <div class="card-title" id="scaleName">Do (C) Majeure</div>
+        <div class="scale-keys" id="scaleKeys"></div>
+        <div style="margin-top:14px">
+          <div class="card-title">Formule</div>
+          <div class="formula-row" id="scaleFormula"></div>
+        </div>
+        <div id="relativeInfo" style="margin-top:12px"></div>
+        <button class="btn-secondary" style="margin-top:14px;padding:10px;" onclick="playCurrentScale()">▶ Écouter la gamme</button>
+      </div>
+
+      <div class="info-box">
+        <strong>Ton (T)</strong> = 2 demi-tons &nbsp;|&nbsp; <strong>Demi-ton (S)</strong> = 1 demi-ton<br><br>
+        La <strong>gamme mineure naturelle relative</strong> d'une majeure commence sur le 6ème degré. Elle partage exactement les mêmes notes !
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gamme harmonique — la différence</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          La mineure harmonique élève le <strong>7ème degré</strong> d'un demi-ton, créant une tension caractéristique (intervalle augmenté entre 6 et 7). Très utilisée en jazz, flamenco, metal.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACCORDS ===== -->
+    <div class="section" id="section-chords">
+      <h1 class="module-title">Suites d'accords</h1>
+      <p class="module-sub">Pop / Rock · Jazz · Hip-hop & R&B</p>
+      <div id="chordsContent"></div>
+    </div>
+
+    <!-- ===== QUIZ ===== -->
+    <div class="section" id="section-quiz">
+      <h1 class="module-title">Quiz</h1>
+      <p class="module-sub">Teste tes connaissances</p>
+
+      <div class="quiz-score">
+        <div>
+          <div class="score-label">Score</div>
+          <div class="score-num"><span id="scoreCorrect">0</span> / <span id="scoreTotal">0</span></div>
+        </div>
+        <div style="text-align:right">
+          <div class="score-label">Série</div>
+          <div class="score-num" id="scoreStreak">0</div>
+        </div>
+      </div>
+
+      <div class="quiz-type-row">
+        <button class="sel-btn active" onclick="setQuizType('notes')" id="qt-notes">Notes</button>
+        <button class="sel-btn" onclick="setQuizType('intervals')" id="qt-intervals">Intervalles</button>
+        <button class="sel-btn" onclick="setQuizType('scales')" id="qt-scales">Gammes</button>
+        <button class="sel-btn" onclick="setQuizType('chords')" id="qt-chords">Accords</button>
+      </div>
+
+      <div class="quiz-card" id="quizCard">
+        <div class="quiz-question" id="quizQuestion">Prêt à commencer ?</div>
+        <div class="quiz-sub" id="quizSub">Choisis un type de quiz ci-dessus</div>
+      </div>
+      <div class="quiz-options" id="quizOptions" style="display:none"></div>
+      <div class="quiz-result" id="quizResult"></div>
+      <button class="btn-primary" id="quizNextBtn" onclick="nextQuestion()" style="display:none">Question suivante →</button>
+      <button class="btn-secondary" onclick="resetQuiz()">Réinitialiser le score</button>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<script src="app.js"></script>
+</body>
+</html>
