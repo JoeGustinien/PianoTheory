@@ -553,7 +553,11 @@ body {
   font-size: 15px;
 }
 
-/* PLAY BUTTON (inline) */
+/* ANCRES — offset pour la nav sticky */
+[id^="anchor-"] {
+  scroll-margin-top: 16px;
+}
+
 .play-btn {
   margin-top: 10px;
   background: rgba(200,169,110,0.1);

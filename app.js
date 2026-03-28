@@ -596,7 +596,7 @@ function buildTheory() {
   const content = document.getElementById('theoryContent');
 
   // Section 1 : construction des accords
-  content.innerHTML += `<h2 class="theory-section-title">Construction des accords</h2>
+  content.innerHTML += `<h2 class="theory-section-title" id="anchor-construction">Construction des accords</h2>
   <div class="info-box">Tout accord se construit en <strong>empilant des tierces</strong> sur une note de base (la fondamentale). La nature de ces tierces (majeure = 4 demi-tons, mineure = 3) détermine la couleur de l'accord.</div>`;
 
   const grid = document.createElement('div');
@@ -616,7 +616,7 @@ function buildTheory() {
   content.appendChild(grid);
 
   // Section 2 : degrés
-  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Les degrés de la gamme</h2>
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title" id="anchor-degres">Les degrés de la gamme</h2>
   <div class="info-box">Dans une tonalité, chaque note porte un <strong>rôle fonctionnel</strong>. C'est ce qui explique pourquoi certains accords créent de la tension et d'autres du repos.</div>`;
 
   const degGrid = document.createElement('div');
@@ -635,7 +635,7 @@ function buildTheory() {
   content.appendChild(degGrid);
 
   // Section 3 : tension / repos
-  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Tension & Repos</h2>
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title" id="anchor-tension">Tension & Repos</h2>
   <div class="info-box">La musique tonale fonctionne sur un cycle permanent : <strong>repos → tension → résolution</strong>. C'est ce mouvement qui crée l'émotion.</div>
   <div class="card" style="margin-bottom:14px">
     <div class="card-title">Les pôles</div>
@@ -650,7 +650,7 @@ function buildTheory() {
   </div>`;
 
   // Section 4 : cadences
-  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title">Les cadences</h2>
+  content.innerHTML += `<div class="divider"></div><h2 class="theory-section-title" id="anchor-cadences">Les cadences</h2>
   <div class="info-box">Une <strong>cadence</strong> est une formule harmonique qui conclut (ou suspend) une phrase musicale. C'est la "ponctuation" de la musique.</div>`;
 
   CADENCES.forEach(cad => {
@@ -833,17 +833,61 @@ function resetEarScore() {
   document.getElementById('earStreak').textContent = '0';
   nextEarQuestion();
 }
+// =====================
+// NAVIGATION + ANCRES
+// =====================
 const SECTION_LABELS = {
   keys:'Clavier', intervals:'Intervalles', scales:'Gammes', chords:'Accords', theory:'Théorie', ear:'Oreille', quiz:'Quiz'
 };
 
-function showSection(name) {
+// Sous-ancres : #theory-cadences scrolle vers la section théorie + ancre interne
+const ANCHOR_PARENT = {
+  'construction':'theory', 'degres':'theory', 'tension':'theory', 'cadences':'theory',
+  'notes-ear':'ear', 'intervals-ear':'ear', 'chords-ear':'ear',
+};
+
+function showSection(name, scrollTo) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(`section-${name}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`btn-${name}`).classList.add('active');
   document.getElementById('modLabel').textContent = SECTION_LABELS[name];
+  // Update URL hash without triggering hashchange
+  history.replaceState(null, '', `#${name}${scrollTo ? '-' + scrollTo : ''}`);
+  // Scroll to sub-anchor if specified
+  if (scrollTo) {
+    setTimeout(() => {
+      const el = document.getElementById(`anchor-${scrollTo}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  } else {
+    document.querySelector('.content').scrollTop = 0;
+  }
 }
+
+function navigateToHash(hash) {
+  if (!hash || hash === '#') return;
+  const h = hash.replace('#', '');
+  // Check if it's a sub-anchor like "theory-cadences"
+  const dashIdx = h.indexOf('-');
+  if (dashIdx > -1) {
+    const section = h.slice(0, dashIdx);
+    const sub = h.slice(dashIdx + 1);
+    // Handle ear sub-levels
+    if (section === 'ear') {
+      const lvlMap = { 'notes': 1, 'intervals': 2, 'chords': 3 };
+      if (lvlMap[sub]) { showSection('ear'); setEarLevel(lvlMap[sub]); return; }
+    }
+    if (ANCHOR_PARENT[`${sub}`] === section || Object.keys(SECTION_LABELS).includes(section)) {
+      showSection(section, sub);
+      return;
+    }
+  }
+  // Plain section anchor
+  if (SECTION_LABELS[h]) showSection(h);
+}
+
+window.addEventListener('hashchange', () => navigateToHash(window.location.hash));
 
 // =====================
 // INIT
@@ -856,4 +900,6 @@ document.addEventListener('DOMContentLoaded', () => {
   buildChords();
   buildTheory();
   nextEarQuestion();
+  // Handle initial hash on page load
+  if (window.location.hash) navigateToHash(window.location.hash);
 });
