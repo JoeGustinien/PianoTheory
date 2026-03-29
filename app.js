@@ -834,10 +834,285 @@ function resetEarScore() {
   nextEarQuestion();
 }
 // =====================
+// GAMMES — MODULE QUIZ
+// =====================
+
+const SCALE_QUIZ_TYPES = [
+  { id:'notes',    label:'🎵 Trouver les notes',   desc:'On te donne la gamme → tu sélectionnes les bonnes notes sur le clavier' },
+  { id:'listen',   label:'👂 Reconnaître à l\'oreille', desc:'On joue la gamme → tu identifies laquelle c\'est' },
+  { id:'name',     label:'🔤 Nommer la gamme',     desc:'On te donne les notes → tu trouves le nom de la gamme' },
+  { id:'relative', label:'🔄 Trouver la relative', desc:'On te donne une gamme → tu trouves sa relative' },
+];
+
+let sqType = 'notes';
+let sqCorrect = 0, sqTotal = 0, sqStreak = 0;
+let sqActive = false;
+let sqAnswer = null;
+let sqData = null;
+let sqSelectedKeys = [];
+
+function setSQType(type) {
+  sqType = type;
+  SCALE_QUIZ_TYPES.forEach(t => {
+    const btn = document.getElementById(`sq-${t.id}`);
+    if (btn) btn.classList.toggle('active', t.id === type);
+  });
+  nextSQQuestion();
+}
+
+function nextSQQuestion() {
+  sqActive = false;
+  sqAnswer = null;
+  sqSelectedKeys = [];
+  document.getElementById('sqResult').textContent = '';
+  document.getElementById('sqResult').className = 'quiz-result';
+  document.getElementById('sqNextBtn').style.display = 'none';
+  document.getElementById('sqOptions').innerHTML = '';
+  document.getElementById('sqOptions').style.display = 'none';
+  document.getElementById('sqKeyboard').style.display = 'none';
+  document.getElementById('sqPlayBtn').style.display = 'none';
+  document.getElementById('sqValidateBtn').style.display = 'none';
+
+  const rootIdx = Math.floor(Math.random() * 12);
+  const typeKey = ['major','natural_minor','harmonic_minor'][Math.floor(Math.random() * 3)];
+  const scale = buildScale(rootIdx, SCALE_FORMULAS[typeKey]);
+  const rootFR = NOTES_FR_SHORT[rootIdx];
+  const rootEN = NOTES_EN[rootIdx];
+  const typeName = SCALE_NAMES[typeKey];
+
+  sqData = { rootIdx, typeKey, scale, rootFR, rootEN, typeName };
+
+  if (sqType === 'notes') {
+    // Show scale name, click correct notes on keyboard
+    document.getElementById('sqQuestion').textContent = `Gamme ${rootFR} (${rootEN}) ${typeName}`;
+    document.getElementById('sqSub').textContent = 'Clique les 7 notes sur le clavier dans l\'ordre';
+    buildSQKeyboard(scale);
+    document.getElementById('sqKeyboard').style.display = 'block';
+    document.getElementById('sqValidateBtn').style.display = 'block';
+    sqActive = true;
+    sqAnswer = [...scale];
+
+  } else if (sqType === 'listen') {
+    // Play scale, choose from 4 options
+    document.getElementById('sqQuestion').textContent = 'Quelle est cette gamme ?';
+    document.getElementById('sqSub').textContent = 'Écoute puis identifie';
+    document.getElementById('sqPlayBtn').style.display = 'block';
+    // Build 4 options
+    const correct = `${rootFR} (${rootEN}) ${typeName}`;
+    const wrongs = [];
+    while (wrongs.length < 3) {
+      const wr = Math.floor(Math.random() * 12);
+      const wt = ['major','natural_minor','harmonic_minor'][Math.floor(Math.random() * 3)];
+      const w = `${NOTES_FR_SHORT[wr]} (${NOTES_EN[wr]}) ${SCALE_NAMES[wt]}`;
+      if (w !== correct && !wrongs.includes(w)) wrongs.push(w);
+    }
+    sqAnswer = correct;
+    buildSQOptions(shuffle([correct, ...wrongs]));
+    sqActive = true;
+
+  } else if (sqType === 'name') {
+    // Show notes, choose scale name
+    const notesStr = scale.map(n => `${NOTES_FR_SHORT[n]} (${NOTES_EN[n]})`).join(' · ');
+    document.getElementById('sqQuestion').textContent = notesStr;
+    document.getElementById('sqSub').textContent = 'Quel est le nom de cette gamme ?';
+    const correct = `${rootFR} (${rootEN}) ${typeName}`;
+    const wrongs = [];
+    while (wrongs.length < 3) {
+      const wr = Math.floor(Math.random() * 12);
+      const wt = ['major','natural_minor','harmonic_minor'][Math.floor(Math.random() * 3)];
+      const w = `${NOTES_FR_SHORT[wr]} (${NOTES_EN[wr]}) ${SCALE_NAMES[wt]}`;
+      if (w !== correct && !wrongs.includes(w)) wrongs.push(w);
+    }
+    sqAnswer = correct;
+    buildSQOptions(shuffle([correct, ...wrongs]));
+    sqActive = true;
+
+  } else if (sqType === 'relative') {
+    // Show scale, find its relative
+    document.getElementById('sqQuestion').textContent = `Gamme ${rootFR} (${rootEN}) ${typeName}`;
+    let relativeAnswer = '';
+    if (typeKey === 'major') {
+      const relIdx = getRelativeMinor(rootIdx);
+      relativeAnswer = `${NOTES_FR_SHORT[relIdx]} (${NOTES_EN[relIdx]}) Mineure naturelle`;
+    } else if (typeKey === 'natural_minor') {
+      const relIdx = getRelativeMajor(rootIdx);
+      relativeAnswer = `${NOTES_FR_SHORT[relIdx]} (${NOTES_EN[relIdx]}) Majeure`;
+    } else {
+      // Harmonic minor → find its major relative
+      const relIdx = getRelativeMajor(rootIdx);
+      relativeAnswer = `${NOTES_FR_SHORT[relIdx]} (${NOTES_EN[relIdx]}) Majeure`;
+    }
+    document.getElementById('sqSub').textContent = 'Quelle est sa gamme relative ?';
+    const wrongs = [];
+    while (wrongs.length < 3) {
+      const wr = Math.floor(Math.random() * 12);
+      const wt = ['major','natural_minor'][Math.floor(Math.random() * 2)];
+      const w = `${NOTES_FR_SHORT[wr]} (${NOTES_EN[wr]}) ${SCALE_NAMES[wt]}`;
+      if (w !== relativeAnswer && !wrongs.includes(w)) wrongs.push(w);
+    }
+    sqAnswer = relativeAnswer;
+    buildSQOptions(shuffle([relativeAnswer, ...wrongs]));
+    sqActive = true;
+  }
+}
+
+function buildSQOptions(options) {
+  const div = document.getElementById('sqOptions');
+  div.style.display = 'grid';
+  div.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.onclick = () => answerSQ(opt, btn, div);
+    div.appendChild(btn);
+  });
+}
+
+// Interactive keyboard for "trouver les notes"
+function buildSQKeyboard(correctScale) {
+  const wrap = document.getElementById('sqKeyboard');
+  wrap.innerHTML = '';
+
+  // Piano mini
+  const piano = document.createElement('div');
+  piano.className = 'sq-piano';
+
+  const WHITE_N = [0,2,4,5,7,9,11];
+  const BLACK_P = [
+    {note:1,cls:'bk-1s'},{note:3,cls:'bk-2s'},{note:6,cls:'bk-3s'},
+    {note:8,cls:'bk-4s'},{note:10,cls:'bk-5s'},
+  ];
+
+  WHITE_N.forEach(noteIdx => {
+    const key = document.createElement('div');
+    key.className = 'sq-white-key';
+    key.dataset.note = noteIdx;
+    const label = document.createElement('span');
+    label.className = 'note-label';
+    label.textContent = NOTES_FR_SHORT[noteIdx];
+    key.appendChild(label);
+    key.onclick = () => toggleSQKey(noteIdx, key);
+    piano.appendChild(key);
+  });
+
+  BLACK_P.forEach(({note, cls}) => {
+    const key = document.createElement('div');
+    key.className = `sq-black-key ${cls}`;
+    key.dataset.note = note;
+    key.onclick = e => { e.stopPropagation(); toggleSQKey(note, key); };
+    piano.appendChild(key);
+  });
+
+  wrap.appendChild(piano);
+
+  // Selected notes display
+  const selected = document.createElement('div');
+  selected.id = 'sqSelectedNotes';
+  selected.className = 'sq-selected-notes';
+  selected.textContent = 'Aucune note sélectionnée';
+  wrap.appendChild(selected);
+}
+
+function toggleSQKey(noteIdx, keyEl) {
+  if (!sqActive) return;
+  playNote(noteIdx, 4, 0.5);
+  const already = sqSelectedKeys.indexOf(noteIdx);
+  if (already > -1) {
+    sqSelectedKeys.splice(already, 1);
+    keyEl.classList.remove('sq-selected');
+    // Remove all keys with this note
+    document.querySelectorAll(`#sqKeyboard [data-note="${noteIdx}"]`).forEach(k => k.classList.remove('sq-selected'));
+  } else {
+    if (sqSelectedKeys.length >= 7) return; // max 7 notes
+    sqSelectedKeys.push(noteIdx);
+    document.querySelectorAll(`#sqKeyboard [data-note="${noteIdx}"]`).forEach(k => k.classList.add('sq-selected'));
+  }
+  // Update display
+  const display = document.getElementById('sqSelectedNotes');
+  if (sqSelectedKeys.length === 0) {
+    display.textContent = 'Aucune note sélectionnée';
+  } else {
+    display.textContent = sqSelectedKeys.map(n => `${NOTES_FR_SHORT[n]}(${NOTES_EN[n]})`).join(' · ');
+  }
+}
+
+function validateSQKeyboard() {
+  if (!sqActive || sqSelectedKeys.length === 0) return;
+  sqActive = false;
+  sqTotal++;
+  document.getElementById('sqTotal').textContent = sqTotal;
+
+  // Compare selected (order-insensitive) vs correct scale
+  const selected = [...sqSelectedKeys].sort((a,b) => a-b);
+  const correct = [...sqAnswer].sort((a,b) => a-b);
+  const isCorrect = selected.length === correct.length && selected.every((n,i) => n === correct[i]);
+
+  // Highlight keys
+  document.querySelectorAll('#sqKeyboard [data-note]').forEach(k => {
+    const n = parseInt(k.dataset.note);
+    if (correct.includes(n)) k.classList.add('sq-correct-key');
+    if (selected.includes(n) && !correct.includes(n)) k.classList.add('sq-wrong-key');
+  });
+
+  if (isCorrect) {
+    sqCorrect++; sqStreak++;
+    document.getElementById('sqResult').textContent = '✓ Parfait ! Toutes les bonnes notes.';
+    document.getElementById('sqResult').className = 'quiz-result correct-msg';
+  } else {
+    sqStreak = 0;
+    const missed = correct.filter(n => !selected.includes(n)).map(n => `${NOTES_FR_SHORT[n]}(${NOTES_EN[n]})`).join(', ');
+    document.getElementById('sqResult').textContent = `✗ Notes correctes : ${sqData.scale.map(n=>`${NOTES_FR_SHORT[n]}(${NOTES_EN[n]})`).join(' · ')}`;
+    document.getElementById('sqResult').className = 'quiz-result wrong-msg';
+  }
+  document.getElementById('sqCorrect').textContent = sqCorrect;
+  document.getElementById('sqStreak').textContent = sqStreak;
+  document.getElementById('sqNextBtn').style.display = 'block';
+  document.getElementById('sqValidateBtn').style.display = 'none';
+}
+
+function answerSQ(answer, btn, optDiv) {
+  if (!sqActive) return;
+  sqActive = false;
+  sqTotal++;
+  document.getElementById('sqTotal').textContent = sqTotal;
+
+  if (answer === sqAnswer) {
+    btn.classList.add('correct');
+    sqCorrect++; sqStreak++;
+    document.getElementById('sqResult').textContent = '✓ Bonne réponse !';
+    document.getElementById('sqResult').className = 'quiz-result correct-msg';
+  } else {
+    btn.classList.add('wrong');
+    sqStreak = 0;
+    optDiv.querySelectorAll('.quiz-opt').forEach(b => {
+      if (b.textContent === sqAnswer) b.classList.add('correct');
+    });
+    document.getElementById('sqResult').textContent = `✗ C'était : ${sqAnswer}`;
+    document.getElementById('sqResult').className = 'quiz-result wrong-msg';
+  }
+  document.getElementById('sqCorrect').textContent = sqCorrect;
+  document.getElementById('sqStreak').textContent = sqStreak;
+  document.getElementById('sqNextBtn').style.display = 'block';
+}
+
+function playSQScale() {
+  if (sqData) playScale(sqData.scale);
+}
+
+function resetSQScore() {
+  sqCorrect = 0; sqTotal = 0; sqStreak = 0;
+  document.getElementById('sqCorrect').textContent = '0';
+  document.getElementById('sqTotal').textContent = '0';
+  document.getElementById('sqStreak').textContent = '0';
+  nextSQQuestion();
+}
+
+// =====================
 // NAVIGATION + ANCRES
 // =====================
 const SECTION_LABELS = {
-  keys:'Clavier', intervals:'Intervalles', scales:'Gammes', chords:'Accords', theory:'Théorie', ear:'Oreille', quiz:'Quiz'
+  keys:'Clavier', intervals:'Intervalles', scales:'Gammes', chords:'Accords', theory:'Théorie', ear:'Oreille', scaleQuiz:'Quiz Gammes', quiz:'Quiz'
 };
 
 // Sous-ancres : #theory-cadences scrolle vers la section théorie + ancre interne
@@ -900,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   buildChords();
   buildTheory();
   nextEarQuestion();
+  nextSQQuestion();
   // Handle initial hash on page load
   if (window.location.hash) navigateToHash(window.location.hash);
 });

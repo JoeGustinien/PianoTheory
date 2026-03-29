@@ -20,6 +20,7 @@
     <button class="nav-btn" onclick="showSection('chords')" id="btn-chords"><span class="icon">🎸</span>Accords</button>
     <button class="nav-btn" onclick="showSection('theory')" id="btn-theory"><span class="icon">📖</span>Théorie</button>
     <button class="nav-btn" onclick="showSection('ear')" id="btn-ear"><span class="icon">👂</span>Oreille</button>
+    <button class="nav-btn" onclick="showSection('scaleQuiz')" id="btn-scaleQuiz"><span class="icon">🎼</span>Quiz Gammes</button>
     <button class="nav-btn" onclick="showSection('quiz')" id="btn-quiz"><span class="icon">⚡</span>Quiz</button>
   </nav>
 
@@ -196,6 +197,49 @@
       <div class="quiz-result" id="earResult"></div>
       <button class="btn-primary" id="earNextBtn" onclick="nextEarQuestion()" style="display:none">Question suivante →</button>
       <button class="btn-secondary" onclick="resetEarScore()">Réinitialiser le score</button>
+    </div>
+
+    <!-- ===== QUIZ GAMMES ===== -->
+    <div class="section" id="section-scaleQuiz">
+      <h1 class="module-title">Quiz Gammes</h1>
+      <p class="module-sub">4 types d'exercices progressifs</p>
+
+      <div class="quiz-score">
+        <div>
+          <div class="score-label">Score</div>
+          <div class="score-num"><span id="sqCorrect">0</span> / <span id="sqTotal">0</span></div>
+        </div>
+        <div style="text-align:right">
+          <div class="score-label">Série</div>
+          <div class="score-num" id="sqStreak">0</div>
+        </div>
+      </div>
+
+      <!-- Type selector -->
+      <div class="sq-type-grid" id="sqTypeGrid">
+        <button class="sq-type-btn active" id="sq-notes"    onclick="setSQType('notes')">🎵<span>Notes</span></button>
+        <button class="sq-type-btn"        id="sq-listen"   onclick="setSQType('listen')">👂<span>Oreille</span></button>
+        <button class="sq-type-btn"        id="sq-name"     onclick="setSQType('name')">🔤<span>Nommer</span></button>
+        <button class="sq-type-btn"        id="sq-relative" onclick="setSQType('relative')">🔄<span>Relative</span></button>
+      </div>
+
+      <!-- Question card -->
+      <div class="quiz-card" style="min-height:100px;margin-bottom:12px">
+        <div class="quiz-question" id="sqQuestion">Gamme Do (C) Majeure</div>
+        <div class="quiz-sub" id="sqSub">Clique les bonnes notes</div>
+        <button class="ear-play-btn" id="sqPlayBtn" onclick="playSQScale()" style="display:none">▶</button>
+      </div>
+
+      <!-- Keyboard mode -->
+      <div id="sqKeyboard" style="display:none;margin-bottom:12px"></div>
+      <button class="btn-primary" id="sqValidateBtn" onclick="validateSQKeyboard()" style="display:none;margin-bottom:12px">Valider ma sélection</button>
+
+      <!-- MCQ mode -->
+      <div class="quiz-options" id="sqOptions" style="display:none;margin-bottom:12px"></div>
+
+      <div class="quiz-result" id="sqResult"></div>
+      <button class="btn-primary" id="sqNextBtn" onclick="nextSQQuestion()" style="display:none">Question suivante →</button>
+      <button class="btn-secondary" onclick="resetSQScore()">Réinitialiser le score</button>
     </div>
 
     <!-- ===== QUIZ ===== -->

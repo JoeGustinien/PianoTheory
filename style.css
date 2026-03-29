@@ -852,3 +852,112 @@ body {
   border: 1px solid var(--border);
   margin-bottom: 20px;
 }
+
+/* =====================
+   QUIZ GAMMES
+   ===================== */
+
+.sq-type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sq-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sq-type-btn span {
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--text3);
+}
+.sq-type-btn.active {
+  background: rgba(200,169,110,0.12);
+  border-color: rgba(200,169,110,0.45);
+  color: var(--accent);
+}
+.sq-type-btn.active span { color: var(--accent); }
+
+/* Mini piano for keyboard mode */
+.sq-piano {
+  position: relative;
+  height: 100px;
+  display: flex;
+  width: 100%;
+  user-select: none;
+  margin-bottom: 12px;
+}
+
+.sq-white-key {
+  flex: 1;
+  background: var(--white-key);
+  border: 1px solid #d4cfc4;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
+}
+.sq-white-key .note-label {
+  font-size: 9px;
+  font-weight: 500;
+  color: #8a7f72;
+  pointer-events: none;
+}
+.sq-white-key.sq-selected  { background: var(--key-active); }
+.sq-white-key.sq-selected .note-label { color: #4a3a10; }
+.sq-white-key.sq-correct-key { background: #5a9e6f !important; }
+.sq-white-key.sq-wrong-key   { background: #c25a5a !important; }
+
+.sq-black-key {
+  position: absolute;
+  width: calc(100% / 7 * 0.65);
+  height: 62%;
+  background: var(--black-key);
+  border-radius: 0 0 5px 5px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.1s;
+  border: 1px solid #000;
+}
+.sq-black-key.sq-selected   { background: var(--key-active); }
+.sq-black-key.sq-correct-key { background: #5a9e6f !important; }
+.sq-black-key.sq-wrong-key   { background: #c25a5a !important; }
+
+/* Black key positions for 7-white-key octave */
+.bk-1s { left: calc(100%/7*1 - 100%/7*0.35); }
+.bk-2s { left: calc(100%/7*2 - 100%/7*0.35); }
+.bk-3s { left: calc(100%/7*4 - 100%/7*0.35); }
+.bk-4s { left: calc(100%/7*5 - 100%/7*0.35); }
+.bk-5s { left: calc(100%/7*6 - 100%/7*0.35); }
+
+.sq-selected-notes {
+  font-size: 12px;
+  color: var(--text2);
+  text-align: center;
+  padding: 8px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
