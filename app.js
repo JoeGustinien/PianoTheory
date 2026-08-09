@@ -70,6 +70,9 @@ const CHORD_DATA = {
 // AUDIO ENGINE
 // =====================
 let audioCtx = null;
+let pianoWave = null;
+let hammerNoiseBuffer = null;
+let pianoInstrumentPromise = null;
 
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -77,32 +80,138 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+// Piano échantillonné (vrai Steinway acoustique) chargé via soundfont-player.
+// Si la librairie/les samples ne sont pas disponibles (hors-ligne), on retombe
+// sur la synthèse additive ci-dessous.
+function getPianoInstrument() {
+  if (typeof window.Soundfont === 'undefined') return null;
+  if (!pianoInstrumentPromise) {
+    pianoInstrumentPromise = window.Soundfont
+      .instrument(getAudioCtx(), 'electric_piano_1', { soundfont: 'MusyngKite' })
+      .catch(err => {
+        console.warn('Piano échantillonné indisponible, repli sur la synthèse.', err);
+        return null;
+      });
+  }
+  return pianoInstrumentPromise;
+}
+
 function noteToFreq(noteIdx, octave) {
   const semitonesFromA4 = (octave - 4) * 12 + (noteIdx - 9);
   return 440 * Math.pow(2, semitonesFromA4 / 12);
 }
 
+// Forme d'onde additive approximant le spectre harmonique d'une corde de piano
+// (décroissance en 1/n avec atténuation des harmoniques élevées)
+function getPianoWave(ctx) {
+  if (pianoWave) return pianoWave;
+  const harmonics = 24;
+  const real = new Float32Array(harmonics + 1);
+  const imag = new Float32Array(harmonics + 1);
+  for (let n = 1; n <= harmonics; n++) {
+    imag[n] = (1 / Math.pow(n, 1.15)) * Math.exp(-n * 0.045);
+  }
+  pianoWave = ctx.createPeriodicWave(real, imag, { disableNormalization: false });
+  return pianoWave;
+}
+
+function getHammerNoiseBuffer(ctx) {
+  if (hammerNoiseBuffer) return hammerNoiseBuffer;
+  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.04), ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  hammerNoiseBuffer = buf;
+  return buf;
+}
+
 function playNote(noteIdx, octave, duration) {
+  const oct = octave || 4;
+  const dur = Math.max(duration || 1.0, 0.25);
+  const ctx = getAudioCtx();
+  const instrumentPromise = getPianoInstrument();
+
+  if (!instrumentPromise) {
+    playSynthNote(noteIdx, oct, dur);
+    return;
+  }
+  instrumentPromise.then(inst => {
+    if (inst) {
+      inst.play(NOTES_EN[noteIdx] + oct, ctx.currentTime, { duration: dur, gain: 1.4 });
+    } else {
+      playSynthNote(noteIdx, oct, dur);
+    }
+  });
+}
+
+// Repli synthétisé (additif + transitoire de marteau) utilisé si le piano
+// échantillonné n'a pas pu se charger.
+function playSynthNote(noteIdx, octave, duration) {
   const ctx = getAudioCtx();
   const freq = noteToFreq(noteIdx, octave || 4);
-  const dur = duration || 1.0;
   const now = ctx.currentTime;
 
-  const osc = ctx.createOscillator();
+  // Les notes graves d'un piano résonnent naturellement plus longtemps que les aiguës
+  const naturalRelease = Math.max(0.7, 3.4 - Math.log2(freq / 55) * 0.38);
+  const dur = Math.max(duration || 1.0, 0.25);
+  const release = Math.min(naturalRelease, Math.max(dur * 2.2, 0.5));
+
+  const master = ctx.createGain();
+  master.gain.value = 0.85;
+  master.connect(ctx.destination);
+
+  // Filtre passe-bas qui se referme dans le temps : le timbre s'assombrit
+  // après l'impact du marteau, comme sur un piano acoustique
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.Q.value = 0.3;
+  filter.frequency.setValueAtTime(Math.min(freq * 11, 9500), now);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(freq * 2.2, 900), now + release);
+  filter.connect(master);
+
+  // Corps du son : oscillateur principal + un second légèrement désaccordé
+  // pour recréer le battement des cordes doublées/triplées d'un vrai piano
   const gain = ctx.createGain();
+  gain.connect(filter);
 
-  osc.type = 'sine';
+  const osc = ctx.createOscillator();
+  osc.setPeriodicWave(getPianoWave(ctx));
   osc.frequency.setValueAtTime(freq, now);
-
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.5, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-
   osc.connect(gain);
-  gain.connect(ctx.destination);
+
+  const osc2 = ctx.createOscillator();
+  osc2.setPeriodicWave(getPianoWave(ctx));
+  osc2.frequency.setValueAtTime(freq * Math.pow(2, 5 / 1200), now);
+  const gain2 = ctx.createGain();
+  gain2.gain.value = 0.45;
+  osc2.connect(gain2);
+  gain2.connect(gain);
+
+  const peak = 0.55;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(peak, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(peak * 0.4, now + Math.min(0.25, release * 0.4));
+  gain.gain.exponentialRampToValueAtTime(0.0006, now + release);
+
+  // Transitoire d'attaque : bref souffle de bruit filtré simulant le coup de marteau
+  const noise = ctx.createBufferSource();
+  noise.buffer = getHammerNoiseBuffer(ctx);
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = Math.min(freq * 3, 6500);
+  noiseFilter.Q.value = 0.8;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.12, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.045);
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(master);
 
   osc.start(now);
-  osc.stop(now + dur);
+  osc2.start(now);
+  noise.start(now);
+  osc.stop(now + release + 0.15);
+  osc2.stop(now + release + 0.15);
+  noise.stop(now + 0.05);
 }
 
 function playChord(noteIndices, octave, duration) {
